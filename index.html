@@ -1,213 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Image Gallery</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-        }
-
-        /* Gallery Grid */
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Gallery Item */
-        .gallery-item {
-            position: relative;
-            text-align: center;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid #e0e0e0;
-        }
-
-        .gallery-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Image Styling */
-        .gallery-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* Modal Styling */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            width: 80%;
-            max-width: 600px;
-            position: relative;
-        }
-
-        .modal-content img {
-            width: 100%;
-            max-height: 400px;
-            object-fit: contain;
-            border-radius: 10px;
-        }
-
-        .modal-content button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #25D366;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .modal-content button:hover {
-            background: #1c9c58;
-        }
-
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            cursor: pointer;
-        }
-
-        /* Add Button Below Images */
-        .gallery-item button {
-            position: relative;
-            bottom: 0;
-            width: calc(100% - 30px);
-            margin: 10px auto;
-            padding: 10px;
-            font-size: 14px;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease;
-        }
-
-        .gallery-item button:hover {
-            background: #0056b3;
-            transform: scale(1.05);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery View</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .gallery-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* 2 columns */
+      gap: 10px;
+      padding: 10px;
+    }
+    .gallery-container img {
+      width: 100%;
+      height: auto;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: transform 0.2s;
+    }
+    .gallery-container img:hover {
+      transform: scale(1.05);
+    }
+    #image-count {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      z-index: 1000;
+    }
+    .fullscreen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .fullscreen img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 5px;
+    }
+    .fullscreen:target {
+      display: flex;
+    }
+  </style>
 </head>
 <body>
+  <div id="image-count">Images loaded: 0</div>
+  <div class="gallery-container" id="gallery">
+    <!-- Images will be loaded dynamically -->
+  </div>
 
-<!-- Gallery Container -->
-<div class="gallery" id="gallery"></div>
+  <div class="fullscreen" id="fullscreen">
+    <img id="fullscreen-img" src="" alt="Full Screen">
+  </div>
 
-<!-- Modal -->
-<div class="modal" id="modal">
-    <div class="modal-content">
-        <span class="close" id="closeModal">&times;</span>
-        <img id="modalImage" src="" alt="Large View">
-        <button id="whatsappButton">Send to WhatsApp</button>
-    </div>
-</div>
+  <script>
+    const gallery = document.getElementById('gallery');
+    const imageCount = document.getElementById('image-count');
+    let imageLoaded = 0;
+    const totalImages = 100; // Replace with the total number of images in your folder
+    const imageFolder = 'path/to/your/images'; // Replace with the actual folder path
 
-<script>
-    // Function to load images dynamically
-    function loadImages() {
-        const gallery = document.getElementById('gallery');
-        const imageFolder = 'img/'; // Folder where images are stored
-        const imageCount = 20; // Set this to the maximum number of images you expect
-        const imageExtension = '.jpeg'; // Change to '.png', '.jpg', etc., if needed
-
-        for (let i = 1; i <= imageCount; i++) {
-            const imagePath = `${imageFolder}${i}${imageExtension}`;
-
-            // Create gallery item container
-            const galleryItem = document.createElement('div');
-            galleryItem.className = 'gallery-item';
-
-            // Create image element
-            const img = document.createElement('img');
-            img.src = imagePath;
-            img.alt = `Image ${i}`;
-            img.onerror = () => galleryItem.remove(); // Remove if image doesn't exist
-            img.onclick = () => openModal(imagePath); // Show large image on click
-
-            // Create button element
-            const button = document.createElement('button');
-            button.textContent = 'Send to WhatsApp';
-            button.onclick = () => sendToWhatsApp(imagePath);
-
-            // Append elements to gallery item
-            galleryItem.appendChild(img);
-            galleryItem.appendChild(button);
-
-            // Append gallery item to gallery container
-            gallery.appendChild(galleryItem);
-        }
+    // Load images from the folder
+    function loadImages(startIndex, count) {
+      for (let i = startIndex; i < startIndex + count && i <= totalImages; i++) {
+        const img = document.createElement('img');
+        img.src = `${imageFolder}/${i}.jpeg`; // Adjust file extension if needed
+        img.alt = `Image ${i}`;
+        img.addEventListener('click', () => openFullScreen(img.src));
+        gallery.appendChild(img);
+        imageLoaded++;
+      }
+      updateImageCount();
     }
 
-    // Function to open modal with large image
-    function openModal(imagePath) {
-        const modal = document.getElementById('modal');
-        const modalImage = document.getElementById('modalImage');
-        const whatsappButton = document.getElementById('whatsappButton');
-
-        modal.style.display = 'flex';
-        modalImage.src = imagePath;
-
-        // Update WhatsApp button action
-        whatsappButton.onclick = () => sendToWhatsApp(imagePath);
+    function updateImageCount() {
+      imageCount.textContent = `Images loaded: ${imageLoaded}`;
     }
 
-    // Function to close modal
-    function closeModal() {
-        const modal = document.getElementById('modal');
-        modal.style.display = 'none';
+    function openFullScreen(src) {
+      const fullscreenImg = document.getElementById('fullscreen-img');
+      const fullscreen = document.getElementById('fullscreen');
+      fullscreenImg.src = src;
+      fullscreen.style.display = 'flex';
     }
 
-    // Function to send image URL to WhatsApp
-    function sendToWhatsApp(imageUrl) {
-        const message = `Check out this image: ${imageUrl}`;
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+    function closeFullScreen() {
+      const fullscreen = document.getElementById('fullscreen');
+      fullscreen.style.display = 'none';
     }
 
-    // Attach close modal event
-    document.getElementById('closeModal').onclick = closeModal;
+    // Infinite scrolling
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+        loadImages(imageLoaded + 1, 10); // Load 10 more images
+      }
+    });
 
-    // Load images on page load
-    window.onload = loadImages;
-</script>
+    // Close fullscreen on background click
+    document.getElementById('fullscreen').addEventListener('click', closeFullScreen);
 
+    // Initial load
+    loadImages(1, 10); // Load the first 10 images
+  </script>
 </body>
 </html>
