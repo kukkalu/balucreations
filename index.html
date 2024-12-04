@@ -6,32 +6,48 @@
     <title>Dynamic Image Gallery</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-color: #f8f9fa;
         }
+
+        /* Gallery Grid */
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
             padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
+
+        /* Gallery Item */
         .gallery-item {
+            position: relative;
             text-align: center;
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e0e0e0;
         }
+
+        .gallery-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Image Styling */
         .gallery-item img {
             width: 100%;
-            height: 150px;
+            height: 200px;
             object-fit: cover;
             display: block;
-            cursor: pointer;
         }
-        /* Modal Styles */
+
+        /* Modal Styling */
         .modal {
             display: none;
             position: fixed;
@@ -44,6 +60,7 @@
             align-items: center;
             z-index: 1000;
         }
+
         .modal-content {
             background: white;
             border-radius: 10px;
@@ -53,12 +70,14 @@
             max-width: 600px;
             position: relative;
         }
+
         .modal-content img {
             width: 100%;
             max-height: 400px;
             object-fit: contain;
             border-radius: 10px;
         }
+
         .modal-content button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -70,9 +89,11 @@
             cursor: pointer;
             transition: background 0.3s ease;
         }
+
         .modal-content button:hover {
             background: #1c9c58;
         }
+
         .close {
             position: absolute;
             top: 10px;
@@ -81,6 +102,27 @@
             font-weight: bold;
             color: #333;
             cursor: pointer;
+        }
+
+        /* Add Button Below Images */
+        .gallery-item button {
+            position: relative;
+            bottom: 0;
+            width: calc(100% - 30px);
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 14px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .gallery-item button:hover {
+            background: #0056b3;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -120,8 +162,14 @@
             img.onerror = () => galleryItem.remove(); // Remove if image doesn't exist
             img.onclick = () => openModal(imagePath); // Show large image on click
 
-            // Append image to gallery item
+            // Create button element
+            const button = document.createElement('button');
+            button.textContent = 'Send to WhatsApp';
+            button.onclick = () => sendToWhatsApp(imagePath);
+
+            // Append elements to gallery item
             galleryItem.appendChild(img);
+            galleryItem.appendChild(button);
 
             // Append gallery item to gallery container
             gallery.appendChild(galleryItem);
