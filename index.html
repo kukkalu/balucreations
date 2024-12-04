@@ -29,27 +29,74 @@
             height: 150px;
             object-fit: cover;
             display: block;
+            cursor: pointer;
         }
-        .gallery-item button {
-            width: 90%;
-            padding: 10px;
-            margin: 10px auto;
-            border: none;
-            border-radius: 5px;
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }
+        .modal-content img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+        .modal-content button {
+            margin-top: 20px;
+            padding: 10px 20px;
             background: #25D366;
             color: white;
-            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
             transition: background 0.3s ease;
         }
-        .gallery-item button:hover {
+        .modal-content button:hover {
             background: #1c9c58;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
+<!-- Gallery Container -->
 <div class="gallery" id="gallery"></div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <span class="close" id="closeModal">&times;</span>
+        <img id="modalImage" src="" alt="Large View">
+        <button id="whatsappButton">Send to WhatsApp</button>
+    </div>
+</div>
 
 <script>
     // Function to load images dynamically
@@ -71,19 +118,33 @@
             img.src = imagePath;
             img.alt = `Image ${i}`;
             img.onerror = () => galleryItem.remove(); // Remove if image doesn't exist
+            img.onclick = () => openModal(imagePath); // Show large image on click
 
-            // Create button element
-            const button = document.createElement('button');
-            button.textContent = 'Send to WhatsApp';
-            button.onclick = () => sendToWhatsApp(imagePath);
-
-            // Append elements to gallery item
+            // Append image to gallery item
             galleryItem.appendChild(img);
-            galleryItem.appendChild(button);
 
             // Append gallery item to gallery container
             gallery.appendChild(galleryItem);
         }
+    }
+
+    // Function to open modal with large image
+    function openModal(imagePath) {
+        const modal = document.getElementById('modal');
+        const modalImage = document.getElementById('modalImage');
+        const whatsappButton = document.getElementById('whatsappButton');
+
+        modal.style.display = 'flex';
+        modalImage.src = imagePath;
+
+        // Update WhatsApp button action
+        whatsappButton.onclick = () => sendToWhatsApp(imagePath);
+    }
+
+    // Function to close modal
+    function closeModal() {
+        const modal = document.getElementById('modal');
+        modal.style.display = 'none';
     }
 
     // Function to send image URL to WhatsApp
@@ -92,6 +153,9 @@
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     }
+
+    // Attach close modal event
+    document.getElementById('closeModal').onclick = closeModal;
 
     // Load images on page load
     window.onload = loadImages;
