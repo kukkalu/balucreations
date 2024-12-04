@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Image Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .gallery-item {
+            text-align: center;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        .gallery-item button {
+            width: 90%;
+            padding: 10px;
+            margin: 10px auto;
+            border: none;
+            border-radius: 5px;
+            background: #25D366;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .gallery-item button:hover {
+            background: #1c9c58;
+        }
+    </style>
+</head>
+<body>
+
+<div class="gallery" id="gallery"></div>
+
+<script>
+    // Function to load images dynamically
+    function loadImages() {
+        const gallery = document.getElementById('gallery');
+        const imageFolder = 'img/'; // Folder where images are stored
+        const imageCount = 20; // Set this to the maximum number of images you expect
+        const imageExtension = '.jpeg'; // Change to '.png', '.jpg', etc., if needed
+
+        for (let i = 1; i <= imageCount; i++) {
+            const imagePath = `${imageFolder}${i}${imageExtension}`;
+
+            // Create gallery item container
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+
+            // Create image element
+            const img = document.createElement('img');
+            img.src = imagePath;
+            img.alt = `Image ${i}`;
+            img.onerror = () => galleryItem.remove(); // Remove if image doesn't exist
+
+            // Create button element
+            const button = document.createElement('button');
+            button.textContent = 'Send to WhatsApp';
+            button.onclick = () => sendToWhatsApp(imagePath);
+
+            // Append elements to gallery item
+            galleryItem.appendChild(img);
+            galleryItem.appendChild(button);
+
+            // Append gallery item to gallery container
+            gallery.appendChild(galleryItem);
+        }
+    }
+
+    // Function to send image URL to WhatsApp
+    function sendToWhatsApp(imageUrl) {
+        const message = `Check out this image: ${imageUrl}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+
+    // Load images on page load
+    window.onload = loadImages;
+</script>
+
+</body>
+</html>
